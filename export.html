@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data Recorder</title>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+</head>
+<body>
+    <h1>Data Recorder</h1>
+    <form id="filenameForm">
+        <label for="filename">Enter Filename:</label>
+        <input type="text" id="filename" name="filename" placeholder="Enter filename...">
+    </form>
+    <button onclick="startRecording()">Start Recording</button>
+    <button onclick="stopRecording()">Stop Recording</button>
+    <button onclick="resetData()">Reset Data</button>
+    <button onclick="exportToExcel()">Export to Excel</button>
+
+    <h2>Recorded Data</h2>
+    <ul id="recordedList"></ul>
+    <p>Total Recorded Entries: <span id="recordedCount">0</span></p>
+
+    <script>
+        let recording = false;
+        let recordedData = [];
+        let filename = "recorded_data";  // Default filename
+
+        function startRecording() {
+            recording = true;
+            recordedData = [];
+            updateRecordedData();
+        }
+
+        function stopRecording() {
+            recording = false;
+            updateRecordedData();
+        }
+
+        function resetData() {
+            recordedData = [];
+            document.getElementById("filename").value = "";  // Clear the entered filename
+            updateRecordedData();
+        }
+
+        function exportToExcel() {
+            if (recordedData.length === 0) {
+                alert("No recorded data to export.");
+                return;
+            }
+
+            const ws_name = "RecordedData";
+            const ws_data = recordedData;
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(ws_data), ws_name);
+
+            const enteredFilename = document.getElementById("filename").value;
+            filename = enteredFilename || filename;
+
+            XLSX.writeFile(wb, `${filename}.xlsx`);
+        }
+
+        function updateRecordedData() {
+            const recordedList = document.getElementById("recordedList");
+            const recordedCount = document.getElementById("recordedCount");
+
+            recordedList.innerHTML = "";
+            recordedCount.textContent = recordedData.length;
+
+            recordedData.forEach((data, index) => {
+                const listItem = document.createElement("li");
+                listItem.textContent = `Entry ${index + 1}: ${JSON.stringify(data)}`;
+                recordedList.appendChild(listItem);
+            });
+        }
+
+        // Simulate fetching data from your ESP32
+        setInterval(function() {
+            if (recording) {
+                fetch('http://172.20.10.2/data')  // Replace with your ESP32 IP
+                    .then(response => response.json())
+                    .then(data => {
+                        recordedData.push(data);
+                        updateRecordedData();
+                    })
+                    .catch(error => console.error('Fetch error:', error));
+            }
+        }, 1000);
+    </script>
+</body>
+</html>

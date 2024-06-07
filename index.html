@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>ESP32 Sensor Data</title>
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <style>
+        body {
+            background-color: #f8f9fa; /* Warna latar belakang abu-abu muda */
+        }
+
+        .container {
+            margin-top: 50px;
+        }
+
+        #status {
+            font-size: 1.5em;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container text-center">
+        <h1 class="mb-4">ESP32 Sensor Data</h1>
+        
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-body">
+                        <p>Yaw: <span id="yaw"></span></p>
+                        <p>Pitch: <span id="pitch"></span></p>
+                        <p>Roll: <span id="roll"></span></p>
+                        <p>Flex Sensor 1: <span id="flex1"></span></p>
+                        <p>Flex Sensor 2: <span id="flex2"></span></p>
+                        <p>Flex Sensor 3: <span id="flex3"></span></p>
+                        <p>Flex Sensor 4: <span id="flex4"></span></p>
+                        <p>Flex Sensor 5: <span id="flex5"></span></p>
+                        <p id="status" class="mt-4"></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS and dependencies -->
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.min.js"></script>
+
+    <script>
+        setInterval(function() {
+            fetch('http://172.20.10.2/data')
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('yaw').innerHTML = data.yaw;
+                    document.getElementById('pitch').innerHTML = data.pitch;
+                    document.getElementById('roll').innerHTML = data.roll;
+                    document.getElementById('flex1').innerHTML = data.flex1;
+                    document.getElementById('flex2').innerHTML = data.flex2;
+                    document.getElementById('flex3').innerHTML = data.flex3;
+                    document.getElementById('flex4').innerHTML = data.flex4;
+                    document.getElementById('flex5').innerHTML = data.flex5;
+
+                    var statusElement = document.getElementById('status');
+
+                    if (parseFloat(data.yaw) >= 90 && parseFloat(data.yaw) <= 180) {
+                        statusElement.innerHTML = "Success!";
+                        statusElement.className = "text-success";
+                    } else {
+                        statusElement.innerHTML = "Failed";
+                        statusElement.className = "text-danger";
+                    }
+                })
+                .catch(error => console.error('Fetch error:', error));
+        }, 1000);
+    </script>  
+</body>
+</html>
